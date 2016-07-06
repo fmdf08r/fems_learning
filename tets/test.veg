@@ -1,0 +1,5 @@
+*VERTICES
+*INCLUDE ../objects/sphere.1.node
+*ELEMENTS
+TETS
+*INCLUDE ../objects/sphere.1.ele
