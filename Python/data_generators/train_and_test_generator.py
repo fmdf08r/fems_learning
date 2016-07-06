@@ -22,9 +22,9 @@ for i in range(1, size + 1 ):
     names.extend( ['f' + str(i) + 'x', 'f' + str(i) + 'y', 'f' + str(i) + 'z'] )
 
 labels = ['t']
-size = (labels_columns - 1) / 3
+size = (label_columns - 1) / 3
 for i in range(1, size + 1 ):
-    names.extend( ['v' + str(i) + 'x', 'v' + str(i) + 'y', 'v' + str(i) + 'z'] )
+    labels.extend( ['v' + str(i) + 'x', 'v' + str(i) + 'y', 'v' + str(i) + 'z'] )
 
 data_df.columns = names
 labels_df.columns = labels

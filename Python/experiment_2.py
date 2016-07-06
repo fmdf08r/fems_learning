@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import sys
-import random
 from sklearn import preprocessing
 from keras.models import Model, Sequential
 from keras.layers import Dense, Input, Activation
@@ -11,32 +10,30 @@ import csv
 
 timestep = 0.0333
 
-file_path = '../../data/all_v/'
+training_set = '../data/training_set.csv'
+labels = '../data/training_labels.csv'
 
-training_set = file_path + 'training_set.csv'
-labels = file_path + 'training_labels.csv'
-
-testing_set = file_path + 'testing_set.csv'
-test_labels = file_path + 'testing_labels.csv'
+testing_set = '../data/testing_set.csv'
+test_labels = '../data/testing_labels.csv'
 
 # LOAD data
 training_df = pd.read_csv(training_set, header=0)
 labels_df = pd.read_csv(labels, header=0)
 
-training_data = training_df.loc[:,'p1x':].values
-labels_data = labels_df.loc[:,'v1x':].values
+training_data = training_df.loc[:,'p1x':'f4z'].values
+labels_data = labels_df.loc[:,'v1x':'v4z'].values
 
-xTrain = training_data#[0:359]
-yTrain = labels_data#[0:359]
+xTrain = training_data[0:100000]
+yTrain = labels_data[0:100000]
 
 testing_df = pd.read_csv(testing_set, header=0)
 tLabels_df = pd.read_csv(test_labels, header=0)
 
-testing_data = testing_df.loc[:,'p1x':].values
-tLabels_data = tLabels_df.loc[:,'v1x':].values
+testing_data = testing_df.loc[:,'p1x':'f4z'].values
+tLabels_data = tLabels_df.loc[:,'v1x':'v4z'].values
 
-xTest = testing_data#[0:240]
-yTest = tLabels_data#[0:240]
+xTest = testing_data[0:2000]
+yTest = tLabels_data[0:2000]
 
 # standardization
 scaler = preprocessing.StandardScaler().fit(xTrain)
@@ -47,8 +44,8 @@ num_examples = xTrain.shape[0]
 num_features = xTrain.shape[1]
 num_labels = yTrain.shape[1]
 
-num_hidden_layers = 1 
-layer_nodes = 100 # less than features, which is 36 for initial dataset
+num_hidden_layers = 2 
+layer_nodes = 200 # less than features, which is 36 for initial dataset
 
 deep_NN = Sequential()
 # input layer
@@ -68,12 +65,15 @@ adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
 deep_NN.compile(loss='mse', optimizer= adam, metrics=['accuracy'])
 # train
-hist = deep_NN.fit(xTrain, yTrain, batch_size=1000, nb_epoch=100, validation_data=(xTest, yTest), verbose=1, shuffle=True)
-y_pred = deep_NN.predict(xTrain, batch_size=1000, verbose=1)
+hist = deep_NN.fit(xTrain, yTrain, batch_size=1000, nb_epoch=10, validation_data=(xTest, yTest), verbose=1, shuffle=True)
 
+sys.stdout.write("xTrain type: " + str(type(xTrain))  + "\n")
+y_pred = deep_NN.predict_on_batch(xTrain[1:1000])
+
+'''
 # saving history
 sys.stdout.write('history: saving to file')
-with open('../../training/all_v_results:(1hl,100u,100ep,18K).csv', 'wb') as f:
+with open('../training/results:(2hl,200u,200ep).csv', 'wb') as f:
     t_steps = len(hist.history['acc'])
     writer = csv.writer(f, delimiter=',' )
     writer.writerow( ('loss', 'acc', 'val_loss', 'val_acc')  )
@@ -87,18 +87,29 @@ with open('../../training/all_v_results:(1hl,100u,100ep,18K).csv', 'wb') as f:
 sys.stdout.write('...completed\n')
 
 #saving predictions
-sys.stdout.write("predictions: saving to file: ")
+sys.stdout.write("predictions: saving to file")
 indices = range( y_pred.shape[0]  )
-with open(file_path + 'testing_pred_18K.csv', 'wb') as f:
-    f.write('v,t,vx,vy,vz\n')
+with open('../data/testing_pred.csv', 'wb') as f:
+    f.write('el,v1,v2,v3,v4,t,v1x,v1y,v1z,v2x,v2y,v2z,v3x,v3y,v3z,v4x,v4y,v4z\n')
     for i in indices:
-        if i % 10000 == 0:
-	    sys.stdout.write(str(i) + " - ")
-	    sys.stdout.flush()
-	f.write( str(int(training_df.loc[i,'v']))\
-	 + "," + str(int(training_df.loc[i,'t']))\
+	f.write( str(int(testing_df.loc[i,'el']))\
+	 + "," + str(int(testing_df.loc[i,'v1']))\
+	 + "," + str(int(testing_df.loc[i,'v2']))\
+	 + "," + str(int(testing_df.loc[i,'v3']))\
+	 + "," + str(int(testing_df.loc[i,'v4']))\
+	 + "," + str(int(testing_df.loc[i,'t']))
 	 + "," + str(y_pred[i][0])\
 	 + "," + str(y_pred[i][1])\
-	 + "," + str(y_pred[i][2]) + "\n" )
+	 + "," + str(y_pred[i][2])\
+	 + "," + str(y_pred[i][3])\
+	 + "," + str(y_pred[i][4])\
+	 + "," + str(y_pred[i][5])\
+	 + "," + str(y_pred[i][6])\
+ 	 + "," + str(y_pred[i][7])\
+	 + "," + str(y_pred[i][8])\
+	 + "," + str(y_pred[i][9])\
+	 + "," + str(y_pred[i][10])\
+	 + "," + str(y_pred[i][11]) + "\n" )
     f.close()
 sys.stdout.write("...completed\n")
+'''
